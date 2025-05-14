@@ -1,0 +1,17 @@
+{
+  "name": "myonlinevault",
+  "version": "1.0.0",
+  "description": "my custom online vault for files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vault",
+    "node",
+    "express",
+    "mongo"
+  ],
+  "author": "Arshpreet Singh",
+  "license": "ISC"
+}
