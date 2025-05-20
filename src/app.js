@@ -26,4 +26,8 @@ app.use(cookieParser());
 // config PUBLIC FOLDER
 app.use(express.static("public"));
 
+// healthcheck API
+import healthCheckRouter from "./routes/healthCheck.routes.js";
+app.use("/api/v1/healthcheck", healthCheckRouter);
+
 export { app };
