@@ -1,14 +1,12 @@
 import mongoose, { Schema } from "mongoose";
 
-const subTasksSchema = new Schema(
+const subTaskSchema = new Schema(
   {
-    subTaskTitle: {
+    subTaskContent: {
       type: String,
       required: true,
     },
-    subTaskContent: {
-      type: String,
-    },
+
     taskId: {
       type: Schema.Types.ObjectId,
       ref: "Task",
@@ -20,8 +18,12 @@ const subTasksSchema = new Schema(
       default: false,
       required: true,
     },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );
 
-export const SubTask = mongoose.model("SubTask", subTasksSchema);
+export const SubTask = mongoose.model("SubTask", subTaskSchema);

@@ -17,6 +17,12 @@ const taskSchema = new Schema(
       default: "not started",
       required: true,
     },
+    subTasks: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "SubTask",
+      }, // array of sub Tasks
+    ],
   },
   { timestamps: true }
 );
