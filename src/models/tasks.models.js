@@ -4,23 +4,18 @@ const taskSchema = new Schema(
   {
     taskTitle: {
       type: String,
-    },
-    category: {
-      type: Schema.Types.ObjectId,
-      ref: "Category",
       required: true,
-    },
-    taskContent: {
-      type: String,
-      required: true,
-    },
-    isCompleted: {
-      type: Boolean,
-      default: false,
     },
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      index: true,
+    },
+    taskStatus: {
+      type: String,
+      enum: ["not started", "in progress", "completed"],
+      default: "not started",
+      required: true,
     },
   },
   { timestamps: true }
