@@ -36,16 +36,16 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // get file
-  const avatarLocalPath = req.file?.path;
 
-  if (!avatarLocalPath) {
-    throw new ApiError(400, "Avatar file is required");
-  }
+  let avatarUrl = "";
 
-  const avatar = await uploadToCloudinary(avatarLocalPath);
+  if (req.file?.path) {
+    const avatar = await uploadToCloudinary(req.file?.path);
 
-  if (!avatar) {
-    throw new ApiError(400, "upload of Avatar to cloudinary failed");
+    if (!avatar) {
+      throw new ApiError(400, "upload of Avatar to cloudinary failed");
+    }
+    avatarUrl = avatar.url;
   }
 
   // create user entry in DB
@@ -54,7 +54,7 @@ const registerUser = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
     email,
     password,
-    avatar: avatar?.url || "",
+    avatar: avatarUrl,
   });
 
   // check if user is created
