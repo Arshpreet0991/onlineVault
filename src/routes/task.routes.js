@@ -6,6 +6,8 @@ import {
   getTask,
   updateTask,
   updateTaskStatus,
+  getAllTask,
+  archiveTask,
 } from "../controllers/task.controllers.js";
 
 const router = Router();
@@ -24,5 +26,11 @@ router.route("/delete-task/:taskId").post(verifyJWT, deleteTask);
 
 // change task status to complete
 router.route("/change-task-status/:taskId").post(verifyJWT, updateTaskStatus);
+
+// change task status to archived
+router.route("/archive-task/:taskId").post(verifyJWT, updateTaskStatus);
+
+// change task status to complete
+router.route("/get-all-tasks").get(verifyJWT, getAllTask);
 
 export default router;
