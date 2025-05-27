@@ -8,7 +8,6 @@
      password: {
       type: String,
       required: [true, "Password is required"],
-      select: false,
     },
     ```
 - Use pre hook to hash the password before saving.
@@ -62,3 +61,38 @@
   - find the user from req.user.\_id
   - set refreshToken to undefined
   - return a response and use clear cookies method to delete accessToken and refreshToken.
+
+#### Step 6. CRUD Operations with User Controller
+
+##### Change Password
+
+- get old password and new Password from the user.
+- get userId from the user object sent by our JWTVerify middleware.
+- verify if old password is correct
+- update the new password
+- save the new password in user object in DB
+- return a response
+
+##### Get Current User
+
+- Since our request already has access to user Id through JWTVerify middleware, we can just return the response and send back req.user
+
+##### Update Accounts details
+
+- get user data
+- check if we got the data
+- validate the data
+- use find and update
+- remove password
+- dont forget to add new:true. This will return the new document not the original document.
+- return response
+
+##### Update User Images/ files
+
+- updating files should have a separated controller than text based updates because we dont want to overwrite all the text based user details everytime we update an image.
+- get image
+- check if we got local path or not
+- upload on cloudinary
+- check if upload successful
+- find the user and update it
+- return the response

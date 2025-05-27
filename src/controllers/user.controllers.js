@@ -161,4 +161,97 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User Logged Out"));
 });
 
-export { registerUser, loginUser, logoutUser };
+// get current user
+const getUser = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "User data fetched successfully"));
+});
+
+// change current user Password
+const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user?._id);
+
+  const checkOldPassword = await user.isPasswordCorrect(oldPassword);
+
+  if (!checkOldPassword) {
+    throw new ApiError(401, "Incorrect Old Password");
+  }
+
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+
+// update account details
+
+const updateAccountDetails = asyncHandler(async (req, res) => {
+  const { email, username } = req.body;
+
+  if (!email || !username) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  const userId = req.user?._id;
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: {
+        email: email,
+        username: username,
+      },
+    },
+    { new: true }
+  ).select("-password");
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedUser, "Account details updated Successfully")
+    );
+});
+
+// updating avatar
+const updateAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar File Required");
+  }
+
+  const uploadOnCloud = await uploadToCloudinary(avatarLocalPath);
+
+  if (!uploadOnCloud) {
+    throw new ApiError(400, "Avatar File not updated on cloud");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        avatar: uploadOnCloud.url,
+      },
+    },
+    { new: true }
+  ).select("-password");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Avatar Updated Succesfully"));
+});
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getUser,
+  changePassword,
+  updateAccountDetails,
+  updateAvatar,
+};
