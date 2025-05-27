@@ -172,6 +172,15 @@ const getUser = asyncHandler(async (req, res) => {
 const changePassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
+  if (!oldPassword || !newPassword) {
+    throw new ApiError(400, "Old Password and New Password required.");
+  }
+
+  const checkNewPasswordFormat = passwordValidator(newPassword);
+  if (!checkNewPasswordFormat) {
+    throw new ApiError(400, "Password Format invalid");
+  }
+
   const user = await User.findById(req.user?._id);
 
   const checkOldPassword = await user.isPasswordCorrect(oldPassword);
@@ -195,6 +204,15 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
   if (!email || !username) {
     throw new ApiError(400, "All fields are required");
+  }
+
+  const checkEmailFormat = emailValidator(email);
+  if (!checkEmailFormat) {
+    throw new ApiError(400, "email format not valid");
+  }
+  const checkUsernameFormat = usernameValidator(username);
+  if (!checkUsernameFormat) {
+    throw new ApiError(400, "Username format not valid");
   }
 
   const userId = req.user?._id;

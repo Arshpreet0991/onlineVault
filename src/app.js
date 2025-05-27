@@ -38,4 +38,13 @@ app.use("/api/v1/healthcheck", healthCheckRouter);
 import registerUserRouter from "./routes/user.routes.js";
 app.use("/api/v1/users", registerUserRouter);
 
+/*****************************************************/
+
+// TASK ROUTES
+
+import taskRoutes from "./routes/task.routes.js";
+// create a task
+
+app.use("/api/v1/tasks", taskRoutes);
+
 export { app };

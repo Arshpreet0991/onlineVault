@@ -26,13 +26,13 @@ router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/get-current-user").get(verifyJWT, getUser);
 
 // Change current password
-router.route("/change-password").get(verifyJWT, changePassword);
+router.route("/change-password").post(verifyJWT, changePassword);
 
 // update account details
-router.route("/update-account-details").get(verifyJWT, updateAccountDetails);
+router.route("/update-account-details").post(verifyJWT, updateAccountDetails);
 
 // update account Avatar
 router
   .route("/update-avatar")
-  .get(verifyJWT, upload.single("avatar"), updateAvatar);
+  .post(verifyJWT, upload.single("avatar"), updateAvatar);
 export default router;

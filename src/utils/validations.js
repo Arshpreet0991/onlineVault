@@ -45,4 +45,23 @@ function passwordValidator(password) {
   return passwordRegex.test(password);
 }
 
-export { usernameValidator, emailValidator, passwordValidator };
+const contentValidator = (input) => {
+  const contentRegex = /^[A-Za-z0-9 ]{3,}$/;
+
+  if (typeof input !== "string") {
+    return false;
+  }
+
+  if (input.trim() === "") {
+    return false;
+  }
+
+  return contentRegex.test(input);
+};
+
+export {
+  usernameValidator,
+  emailValidator,
+  passwordValidator,
+  contentValidator,
+};

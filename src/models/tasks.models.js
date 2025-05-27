@@ -13,7 +13,7 @@ const taskSchema = new Schema(
     },
     taskStatus: {
       type: String,
-      enum: ["not started", "in progress", "completed"],
+      enum: ["not started", "in progress", "completed", "archieved"],
       default: "not started",
       required: true,
     },
