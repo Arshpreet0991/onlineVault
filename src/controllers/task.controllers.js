@@ -96,4 +96,28 @@ const deleteTask = asyncHandler(async (req, res) => {
 
   return res.status(200).json(new ApiResponse(200, {}, "Task Deleted"));
 });
-export { createMainTask, getTask, updateTask, deleteTask };
+
+// manually update Task Status
+const updateTaskStatus = asyncHandler(async (req, res) => {
+  const { taskId } = req.params;
+  const userId = req.user?._id;
+
+  const task = await Task.findOneAndUpdate(
+    { _id: taskId, owner: userId },
+    {
+      $set: {
+        taskStatus: "completed",
+      },
+    },
+    { new: true }
+  );
+
+  if (!task) {
+    throw new ApiError(404, "task not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, task, "Task status changed to complete"));
+});
+export { createMainTask, getTask, updateTask, deleteTask, updateTaskStatus };
