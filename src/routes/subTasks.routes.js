@@ -23,7 +23,4 @@ router.route("/:subTaskId").delete(verifyJWT, deleteSubTask);
 // fetch a sub task
 router.route("/:subTaskId").get(verifyJWT, fetchSubTask);
 
-// get a sub task list of a main task
-router.route("/:taskId").get(verifyJWT, getAllSubTaskFromTask);
-
 export default router;
