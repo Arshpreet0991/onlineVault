@@ -19,10 +19,16 @@ const subTaskSchema = new Schema(
       required: true,
       index: true,
     },
-    dueDate: {
+    dueAt: {
       type: Date,
       index: true,
     },
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high"],
+      default: "medium",
+    },
+
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
