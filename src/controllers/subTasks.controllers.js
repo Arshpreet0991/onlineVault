@@ -131,6 +131,10 @@ const fetchSubTask = asyncHandler(async (req, res) => {
 
   const subTask = await SubTask.findOne({ _id: subTaskId, createdBy: userId });
 
+  if (!subTask) {
+    throw new ApiError(404, "Sub task not found");
+  }
+
   return res
     .status(200)
     .json(new ApiResponse(200, subTask, "sub task fetched successfully"));
