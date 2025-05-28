@@ -1,6 +1,8 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { SubTask } from "../models/subTasks.models.js";
+import { Task } from "../models/tasks.models.js";
+
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {
   usernameValidator,
@@ -11,9 +13,22 @@ import {
 
 // create a sub task
 const createSubTask = asyncHandler(async (req, res) => {
-  const { taskId, subTaskContent, dueAt, priority } = req.body;
+  const { taskId, subTaskContent, dueAt } = req.body;
+
+  let { priority } = req.body;
+  priority = priority.toLowerCase().trim();
 
   const userId = req.user?._id;
+
+  const ifTaskExists = await Task.findOne({ _id: taskId, owner: userId });
+
+  if (!ifTaskExists) {
+    throw new ApiError(400, "Main task or User doesnt exists");
+  }
+
+  if (priority !== "high" && priority !== "medium" && priority !== "low") {
+    throw new ApiError(400, "Select the priority between low, medium and high");
+  }
 
   const ifValid = contentValidator(subTaskContent);
 
