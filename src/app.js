@@ -32,8 +32,6 @@ app.use("/api/v1/healthcheck", healthCheckRouter);
 
 /**************************************************************************/
 
-// Secured Routes
-
 //user routes
 import registerUserRouter from "./routes/user.routes.js";
 app.use("/api/v1/users", registerUserRouter);
@@ -43,8 +41,14 @@ app.use("/api/v1/users", registerUserRouter);
 // TASK ROUTES
 
 import taskRoutes from "./routes/task.routes.js";
-// create a task
 
 app.use("/api/v1/tasks", taskRoutes);
+
+/**************************************************************************/
+
+import subTaskRoutes from "./routes/subTasks.routes.js";
+// create a task
+
+app.use("/api/v1/sub-tasks", subTaskRoutes);
 
 export { app };
