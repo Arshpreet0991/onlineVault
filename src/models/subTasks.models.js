@@ -17,6 +17,11 @@ const subTaskSchema = new Schema(
       type: Boolean,
       default: false,
       required: true,
+      index: true,
+    },
+    dueDate: {
+      type: Date,
+      index: true,
     },
     createdBy: {
       type: Schema.Types.ObjectId,
