@@ -142,7 +142,6 @@ const fetchSubTask = asyncHandler(async (req, res) => {
 });
 
 // get sub tasks for a particular task
-
 const getAllSubTaskFromTask = asyncHandler(async (req, res) => {
   const { taskId } = req.params;
 
@@ -204,10 +203,116 @@ const getAllSubTaskFromTask = asyncHandler(async (req, res) => {
     );
 });
 
+// mark sub task as complete
+const toggleSubTaskStatus = asyncHandler(async (req, res) => {
+  const { subTaskId } = req.params;
+  const userId = req.user?._id;
+
+  if (!subTaskId) {
+    throw new ApiError(400, "Sub task id not valid");
+  }
+
+  const subTask = await SubTask.findOne({ _id: subTaskId, createdBy: userId });
+
+  if (!subTask) {
+    throw new ApiError(404, "Sub task not found");
+  }
+
+  const mainTaskId = subTask.taskId;
+
+  subTask.isCompleted = !subTask.isCompleted;
+
+  subTask.save({ validateBeforeSave: false });
+
+  // logic for auto status update of main task
+
+  const incompletedTask = await SubTask.aggregate([
+    {
+      $match: {
+        taskId: new mongoose.Types.ObjectId(mainTaskId),
+        isCompleted: false,
+      },
+    },
+    {
+      $count: "incompletedTasks",
+    },
+  ]);
+
+  //console.log(typeof incompletedTaskCount[0].incompletedTasks);
+
+  const incompletedTaskCount = incompletedTask[0]?.incompletedTasks;
+
+  let taskStatus = "not started";
+
+  if (incompletedTaskCount === 0) {
+    taskStatus = "completed";
+  } else {
+    taskStatus = "in progress";
+  }
+  await Task.findByIdAndUpdate(
+    mainTaskId,
+    {
+      taskStatus: taskStatus,
+    },
+    { new: true }
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, subTask, "Task status toggled"));
+});
 export {
   createSubTask,
   updateSubTask,
   deleteSubTask,
   fetchSubTask,
   getAllSubTaskFromTask,
+  toggleSubTaskStatus,
 };
+
+/*
+const toggleSubTaskStatus = asyncHandler(async (req, res) => {
+  const { subTaskId } = req.params;
+  const userId = req.user?._id;
+
+  if (!subTaskId) {
+    throw new ApiError(400, "Sub task id not valid");
+  }
+
+  const subTask = await SubTask.findOne({ _id: subTaskId, createdBy: userId });
+
+  if (!subTask) {
+    throw new ApiError(404, "Sub task not found");
+  }
+
+  const mainTaskId = subTask.taskId;
+
+  subTask.isCompleted = !subTask.isCompleted;
+  await subTask.save({ validateBeforeSave: false });
+
+  // Fetch counts
+  const [totalCount, incompleteCount] = await Promise.all([
+    SubTask.countDocuments({ taskId: mainTaskId }),
+    SubTask.countDocuments({ taskId: mainTaskId, isCompleted: false }),
+  ]);
+
+  // Determine status
+  let taskStatus = "not started";
+  if (incompleteCount === 0 && totalCount > 0) {
+    taskStatus = "completed";
+  } else if (incompleteCount < totalCount) {
+    taskStatus = "in progress";
+  }
+
+  await Task.findByIdAndUpdate(
+    mainTaskId,
+    { taskStatus },
+    { new: true }
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, subTask, "Task status toggled"));
+});
+
+*/

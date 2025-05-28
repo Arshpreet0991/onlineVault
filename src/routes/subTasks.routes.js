@@ -7,6 +7,7 @@ import {
   deleteSubTask,
   fetchSubTask,
   getAllSubTaskFromTask,
+  toggleSubTaskStatus,
 } from "../controllers/subTasks.controllers.js";
 
 const router = Router();
@@ -22,5 +23,10 @@ router.route("/:subTaskId").delete(verifyJWT, deleteSubTask);
 
 // fetch a sub task
 router.route("/:subTaskId").get(verifyJWT, fetchSubTask);
+
+// toggle a sub task
+router
+  .route("/:subTaskId/toggleSubTaskStatus")
+  .post(verifyJWT, toggleSubTaskStatus);
 
 export default router;
