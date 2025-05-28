@@ -13,10 +13,11 @@ import {
 
 // create a sub task
 const createSubTask = asyncHandler(async (req, res) => {
-  const { taskId, subTaskContent, dueAt } = req.body;
+  const { taskId, dueAt } = req.body;
 
-  let { priority } = req.body;
+  let { subTaskContent, priority } = req.body;
   priority = priority.toLowerCase().trim();
+  subTaskContent = subTaskContent.trim();
 
   const userId = req.user?._id;
 
@@ -49,4 +50,48 @@ const createSubTask = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, subTask, "Sub Task Added Successfully"));
 });
 
-export { createSubTask };
+// update a sub task
+const updateSubTask = asyncHandler(async (req, res) => {
+  const { dueAt } = req.body;
+
+  let { subTaskContent, priority } = req.body;
+
+  // Validate presence
+  if (!subTaskContent || !priority) {
+    throw new ApiError(400, "SubTask content and priority are required");
+  }
+
+  priority = priority.toLowerCase().trim();
+  subTaskContent = subTaskContent.trim();
+
+  // Optional: Validate priority value
+  const validPriorities = ["high", "medium", "low"];
+  if (!validPriorities.includes(priority)) {
+    throw new ApiError(400, "Priority must be 'low', 'medium', or 'high'");
+  }
+
+  const { subTaskId } = req.params;
+  const userId = req.user?._id;
+
+  const updatedSubTask = await SubTask.findOneAndUpdate(
+    { _id: subTaskId, createdBy: userId },
+    {
+      subTaskContent,
+      dueAt,
+      priority,
+    },
+    { new: true }
+  );
+
+  if (!updatedSubTask) {
+    throw new ApiError(400, "Could not find the sub task or update failed");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedSubTask, "Sub Task updated successfully")
+    );
+});
+
+export { createSubTask, updateSubTask };
