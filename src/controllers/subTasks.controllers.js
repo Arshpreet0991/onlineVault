@@ -10,6 +10,7 @@ import {
   passwordValidator,
   contentValidator,
 } from "../utils/validations.js";
+import mongoose from "mongoose";
 
 // create a sub task
 const createSubTask = asyncHandler(async (req, res) => {
@@ -140,4 +141,73 @@ const fetchSubTask = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, subTask, "sub task fetched successfully"));
 });
 
-export { createSubTask, updateSubTask, deleteSubTask, fetchSubTask };
+// get sub tasks for a particular task
+
+const getAllSubTaskFromTask = asyncHandler(async (req, res) => {
+  const { taskId } = req.params;
+
+  if (!taskId?.trim()) {
+    throw new ApiError(400, "Main task not valid");
+  }
+
+  const subTaskList = await SubTask.aggregate([
+    {
+      $match: {
+        taskId: new mongoose.Types.ObjectId(taskId),
+      },
+    },
+    {
+      $lookup: {
+        from: "tasks",
+        localField: "taskId",
+        foreignField: "_id",
+        as: "main_task",
+      },
+    },
+    {
+      $unwind: "$main_task", // converts the array into an object
+    },
+    {
+      $project: {
+        subTaskContent: 1,
+        dueAt: 1,
+        priority: 1,
+        "main_task.taskTitle": 1,
+        "main_task._id": 1,
+      },
+    },
+  ]);
+
+  const subTaskCount = await SubTask.aggregate([
+    {
+      $match: {
+        taskId: new mongoose.Types.ObjectId(taskId),
+      },
+    },
+    {
+      $count: "numberOfSubTasks",
+    },
+  ]);
+
+  if (!subTaskList) {
+    throw new ApiError(404, "No sub tasks found");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { subTaskList, subTaskCount },
+        "Sub tasks list fetched succesfully"
+      )
+    );
+});
+
+export {
+  createSubTask,
+  updateSubTask,
+  deleteSubTask,
+  fetchSubTask,
+  getAllSubTaskFromTask,
+};

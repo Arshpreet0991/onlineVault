@@ -9,6 +9,7 @@ import {
   getAllTask,
   archiveTask,
 } from "../controllers/task.controllers.js";
+import { getAllSubTaskFromTask } from "../controllers/subTasks.controllers.js";
 
 const router = Router();
 
@@ -32,5 +33,8 @@ router.route("/archive-task/:taskId").post(verifyJWT, updateTaskStatus);
 
 // change task status to complete
 router.route("/get-all-tasks").get(verifyJWT, getAllTask);
+
+// get all sub tasks list of a main task
+router.route("/:taskId/sub-tasks").get(verifyJWT, getAllSubTaskFromTask);
 
 export default router;
