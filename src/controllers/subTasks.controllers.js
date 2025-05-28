@@ -94,4 +94,46 @@ const updateSubTask = asyncHandler(async (req, res) => {
     );
 });
 
-export { createSubTask, updateSubTask };
+// delete a sub task
+const deleteSubTask = asyncHandler(async (req, res) => {
+  const { subTaskId } = req.params;
+
+  const userId = req.user?._id;
+
+  if (!subTaskId) {
+    throw new ApiError(400, "sub task id not valid");
+  }
+
+  const subTaskToDelete = await SubTask.findOneAndDelete({
+    _id: subTaskId,
+    createdBy: userId,
+  });
+
+  if (!subTaskToDelete) {
+    throw new ApiError(404, "Sub task not found");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, subTaskToDelete, "Sub task deleted succesfully")
+    );
+});
+
+// fetch a sub task
+const fetchSubTask = asyncHandler(async (req, res) => {
+  const { subTaskId } = req.params;
+  const userId = req.user?._id;
+
+  if (!subTaskId) {
+    throw new ApiError(400, "Sub task id not valid");
+  }
+
+  const subTask = await SubTask.findOne({ _id: subTaskId, createdBy: userId });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, subTask, "sub task fetched successfully"));
+});
+
+export { createSubTask, updateSubTask, deleteSubTask, fetchSubTask };
