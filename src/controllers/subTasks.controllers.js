@@ -222,44 +222,13 @@ const toggleSubTaskStatus = asyncHandler(async (req, res) => {
 
   subTask.isCompleted = !subTask.isCompleted;
 
-  subTask.save({ validateBeforeSave: false });
+  await subTask.save({ validateBeforeSave: false });
 
   // logic for auto status update of main task
 
-  const incompletedTask = await SubTask.aggregate([
-    {
-      $match: {
-        taskId: new mongoose.Types.ObjectId(mainTaskId),
-        isCompleted: false,
-      },
-    },
-    {
-      $count: "incompletedTasks",
-    },
-  ]);
-
-  //console.log(typeof incompletedTaskCount[0].incompletedTasks);
-
-  const incompletedTaskCount = incompletedTask[0]?.incompletedTasks;
-
-  let taskStatus = "not started";
-
-  if (incompletedTaskCount === 0) {
-    taskStatus = "completed";
-  } else {
-    taskStatus = "in progress";
-  }
-  await Task.findByIdAndUpdate(
-    mainTaskId,
-    {
-      taskStatus: taskStatus,
-    },
-    { new: true }
-  );
-
   return res
     .status(200)
-    .json(new ApiResponse(200, subTask, "Task status toggled"));
+    .json(new ApiResponse(200, { subTask }, "Task status toggled"));
 });
 export {
   createSubTask,
@@ -314,5 +283,61 @@ const toggleSubTaskStatus = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, subTask, "Task status toggled"));
 });
+
+
+------------------------------------------------------------------------
+const incompletedTask = await SubTask.aggregate([
+    [
+      {
+        $match: {
+          taskId: new mongoose.ObjectId(mainTaskId),
+        },
+      },
+      {
+        $facet: {
+          totalSubTasks: [{ $count: "count" }],
+          incompleteSubTasks: [
+            { $match: { isCompleted: false } },
+            { $count: "count" },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          totalSubTasks: {
+            $ifNull: [{ $arrayElemAt: ["$totalSubTasks.count", 0] }, 0],
+          },
+          incompleteSubTasks: {
+            $ifNull: [{ $arrayElemAt: ["$incompleteSubTasks.count", 0] }, 0],
+          },
+        },
+      },
+    ],
+  ]);
+
+
+
+  const totalSubTasks = incompletedTask.totalSubTasks;
+  let totalIncompleteSubTasks = incompletedTask.incompleteSubTasks;
+
+  let taskStatus = "not started";
+
+  if (totalIncompleteSubTasks === 0) {
+    taskStatus = "completed";
+  } else if (
+    totalIncompleteSubTasks > 0 &&
+    totalIncompleteSubTasks < totalSubTasks
+  ) {
+    taskStatus = "in progress";
+  } else {
+    taskStatus = "not started";
+  }
+  const mainTask = await Task.findByIdAndUpdate(
+    mainTaskId,
+    {
+      taskStatus: taskStatus,
+    },
+    { new: true }
+  );
 
 */
