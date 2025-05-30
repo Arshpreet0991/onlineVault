@@ -204,6 +204,8 @@ const getAllSubTaskFromTask = asyncHandler(async (req, res) => {
 });
 
 // mark sub task as complete
+//TODO  +++++++++++++     HAVE TO OPTIMIZE THE DB CALLS. THIS CODE IS TOO HEAVY. ALSO, PUTTING A FIELD IN MAIN TASK CALLED SUB TASK COUNT CAN BE HELPFUL INSTEAD OF MAKING QUERIES TO GET THE COUNT ++++++++++++++++
+
 const toggleSubTaskStatus = asyncHandler(async (req, res) => {
   const { subTaskId } = req.params;
 
