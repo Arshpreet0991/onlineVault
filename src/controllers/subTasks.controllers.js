@@ -206,6 +206,7 @@ const getAllSubTaskFromTask = asyncHandler(async (req, res) => {
 // mark sub task as complete
 const toggleSubTaskStatus = asyncHandler(async (req, res) => {
   const { subTaskId } = req.params;
+
   const userId = req.user?._id;
 
   if (!subTaskId) {
@@ -226,10 +227,93 @@ const toggleSubTaskStatus = asyncHandler(async (req, res) => {
 
   // logic for auto status update of main task
 
+  const subTaskStatusCount = await SubTask.aggregate([
+    {
+      $match: {
+        taskId: new mongoose.Types.ObjectId(mainTaskId),
+      },
+    },
+    {
+      $facet: {
+        taskCount: [
+          {
+            $count: "TotalTaskCount",
+          },
+        ],
+        inCompletedTaskCount: [
+          {
+            $match: {
+              isCompleted: false,
+            },
+          },
+          {
+            $count: "count",
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        taskCount: {
+          $ifNull: [
+            {
+              $arrayElemAt: ["$taskCount.TotalTaskCount", 0],
+            },
+            0,
+          ],
+        },
+        inCompletedTaskCount: {
+          $ifNull: [
+            {
+              $arrayElemAt: ["$inCompletedTaskCount.count", 0],
+            },
+            0,
+          ],
+        },
+      },
+    },
+  ]);
+
+  let totalSubTasksCount = subTaskStatusCount[0]?.taskCount;
+  let inCompleteSubTasksCount = subTaskStatusCount[0]?.inCompletedTaskCount;
+
+  // console.log(totalSubTasksCount, inCompleteSubTasksCount);
+
+  let taskStatus; // No initial assignment, let the conditions determine it
+
+  if (inCompleteSubTasksCount === 0) {
+    // Scenario 1: All subtasks are complete
+    taskStatus = "completed";
+  } else if (inCompleteSubTasksCount === totalSubTasksCount) {
+    // Scenario 2: All subtasks are incomplete
+    taskStatus = "not started";
+  } else if (
+    inCompleteSubTasksCount > 0 &&
+    inCompleteSubTasksCount < totalSubTasksCount
+  ) {
+    // Scenario 3: Some subtasks are incomplete, some are complete
+    taskStatus = "in progress";
+  } else {
+    // Fallback for unexpected scenarios (e.g., negative counts, or logic errors)
+    throw new ApiError(400, "check the main task update logic !!!");
+  }
+
+  console.log(`Main task status: ${taskStatus}`);
+
+  const mainTask = await Task.findOneAndUpdate(
+    { _id: mainTaskId, owner: userId },
+    { taskStatus },
+    {
+      new: true,
+      projection: { _id: 1, taskStatus: 1 }, // Only return _id and taskStatus
+    }
+  );
+
   return res
     .status(200)
-    .json(new ApiResponse(200, { subTask }, "Task status toggled"));
+    .json(new ApiResponse(200, { subTask, mainTask }, "Task status toggled"));
 });
+
 export {
   createSubTask,
   updateSubTask,
